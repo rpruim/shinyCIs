@@ -230,7 +230,7 @@ shinyServer(function(input, output) {
   })
 
   output$runningTotal <- renderText({
-    if (CoverTally()[2] > 0) {
+    if (CoverTally()[2] > nsamples) {
       paste0("Coverage rate: ",
              round(100 * CoverTally()[1]/CoverTally()[2],1), "% (", CoverTally()[2], " samples)")
     } else {
