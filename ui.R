@@ -12,7 +12,6 @@ shinyUI(fluidPage(
   # Application title
   titlePanel("Confidence Intervals for a Mean"),
 
-  # Sidebar with a slider input for number of bins
   sidebarLayout(
     sidebarPanel(
       selectInput(
