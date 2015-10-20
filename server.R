@@ -32,7 +32,7 @@ shinyServer(function(input, output) {
 
   nsamples <- 100
   selected_sample <- nsamples
-
+  coverTally <- c(0, 0)
 
   my_xlim <- reactive({
     res <- switch(
@@ -210,18 +210,18 @@ shinyServer(function(input, output) {
   })
 
 
-  observeEvent(input$A, {tally <<- c(0,0) })
-  observeEvent(input$B, {tally <<- c(0,0) })
-  observeEvent(input$population, {tally <<- c(0,0) })
-  observeEvent(input$n, {tally <<- c(0,0) })
-  observeEvent(input$level, {tally <<- c(0,0) })
+  observeEvent(input$A, {coverTally <<- c(0,0) })
+  observeEvent(input$B, {coverTally <<- c(0,0) })
+  observeEvent(input$population, {coverTally <<- c(0,0) })
+  observeEvent(input$n, {coverTally <<- c(0,0) })
+  observeEvent(input$level, {coverTally <<- c(0,0) })
 
   # text messages
-  Tally <- reactive({
-    cat("A: "); print(tally)
-    tally <<- tally + c( sum(Intervals()$cover),  nrow(Intervals()) )
-    cat("B: "); print(tally)
-    tally
+  CoverTally <- reactive({
+    cat("A: "); print(coverTally)
+    coverTally <<- coverTally + c( sum(Intervals()$cover),  nrow(Intervals()) )
+    cat("B: "); print(coverTally)
+    coverTally
   })
 
   output$message <- renderText({
@@ -230,9 +230,9 @@ shinyServer(function(input, output) {
   })
 
   output$runningTotal <- renderText({
-    if (Tally()[2] > 0) {
+    if (CoverTally()[2] > 0) {
       paste0("Coverage rate: ",
-             round(100 * Tally()[1]/Tally()[2],1), "% (", Tally()[2], " samples)")
+             round(100 * CoverTally()[1]/CoverTally()[2],1), "% (", CoverTally()[2], " samples)")
     } else {
       ""
     }
