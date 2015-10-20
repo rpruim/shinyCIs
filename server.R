@@ -128,7 +128,7 @@ shinyServer(function(input, output) {
 
   output$samplePlot<- renderPlot({
     ggplot( data = OneSample()) +
-      geom_histogram( aes(x = x), bins = 15, fill = "navy", alpha=0.5) +
+      geom_histogram( aes(x = x), bins = 20, fill = "navy", alpha=0.5) +
       expand_limits(x = my_xlim()) +
       theme_bare()
   })
