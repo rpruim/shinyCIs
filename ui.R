@@ -39,10 +39,10 @@ shinyUI(fluidPage(
       ),  # end sidebarPanel
 
     mainPanel(
-#      plotOutput("populationPlot", height = "120px"),
-      plotOutput("bigPlot", height = "200px"),
-#      plotOutput("samplePlot", height = "120px"),
-      plotOutput("intervalsPlot", height = "500px", click = "plot_click"),
+#      plotOutput("populationPlot", height = "110px"),
+      plotOutput("bigPlot", height = "180px"),
+#      plotOutput("samplePlot", height = "110px"),
+      plotOutput("intervalsPlot", height = "400px", click = "plot_click"),
       p("Click on an interval to show a histogram for the underlying sample.")
     )
   )
