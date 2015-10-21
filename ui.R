@@ -33,8 +33,11 @@ shinyUI(fluidPage(
       sliderInput("level", "Confidence Level",
                   min=.50, max = 0.99, value = 0.95, step = 0.01),
       div(align = "center",
+          br(),
           textOutput("message"),
+          br(),
           actionButton("more", "Generate 100 New Samples"),
+          br(),br(),
           textOutput("runningTotal")
       )
       ),  # end sidebarPanel
@@ -44,7 +47,7 @@ shinyUI(fluidPage(
       plotOutput("bigPlot", height = "180px"),
 #      plotOutput("samplePlot", height = "110px"),
       plotOutput("intervalsPlot", height = "500px", click = "plot_click"),
-      p("Click on an interval to show a histogram for the underlying sample.")
+      p(align = "center", "Click on an interval to show a histogram for the underlying sample.")
     )
   )
 ))
