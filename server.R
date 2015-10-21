@@ -37,9 +37,27 @@ shinyServer(function(input, output) {
       input$population,
       norm = c(-6, 6), # input$A + c(-1, 1) * 3.2 * input$B,
       beta = c(0,1),
-      gamma = c(0, input$A / input$B + 3 * sqrt(input$A) / input$B)
+      gamma = c(0, 9 / input$B) # input$A / input$B + 3 * sqrt(input$A) / input$B)
     )
     res
+  })
+
+  PopulationMean <- reactive({
+    switch(
+      input$population,
+      norm = input$A,
+      beta = input$A / (input$A + input$B),
+      gamma = input$A / input$B
+    ) %>% round(2)
+  })
+
+  PopulationSD <- reactive({
+    switch(
+      input$population,
+      norm = input$B,
+      beta = sqrt( input$A * input$B / ( (input$A + input$B)^2 * (input$A + input$B + 1)) ),
+      gamma = sqrt(input$A / input$B^2)
+    ) %>% round(2)
   })
 
   output$paramControls <- renderUI({
@@ -179,7 +197,9 @@ shinyServer(function(input, output) {
       stat_function( fun = popFunction(), n = 1001 ) +
       geom_vline(xintercept = target(), color = "forestgreen", size = 2, alpha = 0.7) +
       lims(x = my_xlim(), y = c(0, NA)) +
-      labs(title = "Population", x ="") +
+      labs(
+        title = paste0("Population (mean = ", PopulationMean(), ", sd =", PopulationSD(), ")"),
+        x ="") +
       theme_bare()
 
     samplePlot <-
