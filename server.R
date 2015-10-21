@@ -43,6 +43,10 @@ shinyServer(function(input, output) {
   })
 
   PopulationMean <- reactive({
+    validate(
+      need( is.character(input$population) & is.numeric(input$A) & is.numeric(input$B),
+            message = "Just a moment.")
+    )
     switch(
       input$population,
       norm = input$A,
@@ -173,6 +177,7 @@ shinyServer(function(input, output) {
   })
 
   output$intervalsPlot <- renderPlot({
+    validate( need(is.numeric(target()), message = "Loading data...") )
     ggplot(data = Intervals()) +
       geom_pointrange(
         aes(x=idx, ymin = lwr, ymax = upr, y = mean, colour = cover,
@@ -191,7 +196,12 @@ shinyServer(function(input, output) {
   })
 
   output$bigPlot <- renderPlot({
-
+    validate(
+      need( is.numeric( PopulationMean() ), message = "Just a moment."),
+      need( inherits(Intervals(), "data.frame"), message = "loading data"),
+      need( is.numeric( my_xlim() ), message = "Just a moment."),
+      need( is.numeric( PopulationSD() ), message = "Just a moment.")
+    )
     populationPlot <-
       ggplot( data.frame( x=my_xlim()), aes(x=my_xlim()) ) +
       stat_function( fun = popFunction(), n = 1001 ) +
@@ -208,7 +218,10 @@ shinyServer(function(input, output) {
                       fill = OneSampleColor(), alpha=0.5) +
       lims(x = my_xlim()) +
       geom_vline(xintercept = mean(OneSample()$x, color = "navy"), size = 2, alpha = 0.7) +
-      labs(title = paste("One Sample; mean = ", round(mean(OneSample()$x), 2)), x="") +
+      labs(title = paste("One Sample (mean = ",
+                         round(mean(OneSample()$x), 2), ", sd = ",
+                         round(sd(OneSample()$x), 2), ")"),
+           x="") +
       theme_bare()
 
     intervalsPlot <-
