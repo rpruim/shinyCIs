@@ -8,6 +8,7 @@
 library(shiny)
 require(mosaic)
 require(ggplot2)
+
 theme_bare <- function(...) {
   theme(
     axis.line = element_blank(),
@@ -26,7 +27,6 @@ theme_bare <- function(...) {
     plot.margin = unit(c(0,0,0,0), "lines")
   )
 }
-
 
 shinyServer(function(input, output) {
 
@@ -89,14 +89,21 @@ shinyServer(function(input, output) {
   })
 
   popFunction <- reactive({
-    function(x) {
-      switch(
-        input$population,
-        norm = dnorm(x, mean = input$A, sd = input$B),
-        beta = dbeta(x, shape1 = input$A, shape2 = input$B),
-        gamma = dgamma(x, shape = input$A, rate = input$B)
-      )
+    switch(
+      input$population,
+      norm = function(x) dnorm(x, mean = input$A, sd = input$B),
+      beta = function(x) dbeta(x, shape1 = input$A, shape2 = input$B),
+      gamma = function(x) dgamma(x, shape = input$A, rate = input$B)
+    )
+  })
+
+  selectedSample <- reactive({
+    if (! is.null(input$plot_click)) {
+      selected_sample <<- round(input$plot_click$y)
+      if (selected_sample < 1) selected_sample <<- 1
+      if (selected_sample > nsamples) selected_sample <<- nsamples
     }
+    selected_sample
   })
 
   OneSample <- reactive({
@@ -137,15 +144,6 @@ shinyServer(function(input, output) {
     colors <- c("TRUE" = "navy", "FALSE" = "red")
     covers <- (Intervals() %>% filter(idx == selectedSample()) )$cover
     colors[ as.character(covers) ]
-  })
-
-  selectedSample <- reactive({
-    if (! is.null(input$plot_click)) {
-      selected_sample <<- round(input$plot_click$y)
-      if (selected_sample < 1) selected_sample <- 1
-      if (selected_sample > nsamples) selected_sample <- nsamples
-    }
-    selected_sample
   })
 
   output$intervalsPlot <- renderPlot({
@@ -237,6 +235,5 @@ shinyServer(function(input, output) {
       ""
     }
   })
-
 
 })
