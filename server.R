@@ -10,13 +10,11 @@ require(mosaic)
 require(ggplot2)
 
 theme_bare <- function(...) {
-  theme(
-    axis.line = element_blank(),
+  theme( complete = FALSE,
+    axis.line = element_blank(), # element_line(colour = "gray80"),
     axis.text.y = element_blank(),
     axis.ticks = element_blank(),
     axis.title.y = element_blank(),
-    # axis.ticks.length = unit(0, "lines"), # Error
-    # axis.ticks.margin = unit(c(0,0,0,0), "lines"),
     legend.position = "none",
     panel.background = element_rect(fill = "white"),
     panel.border = element_blank(),
@@ -32,13 +30,12 @@ shinyServer(function(input, output) {
 
   nsamples <- 100
   selected_sample <- nsamples
-  coverTally <- c(0, 0)
-  needReset <<- FALSE
+  RV <- reactiveValues( cover = 0, total = 0 )
 
   my_xlim <- reactive({
     res <- switch(
       input$population,
-      norm = input$A + c(-1, 1) * 3.2 * input$B,
+      norm = c(-7, 7), # input$A + c(-1, 1) * 3.2 * input$B,
       beta = c(0,1),
       gamma = c(0, input$A / input$B + 3 * sqrt(input$A) / input$B)
     )
@@ -49,8 +46,8 @@ shinyServer(function(input, output) {
     switch(
       input$population,
       norm =  list(
-        sliderInput("A", "mean", min = -10, max = 10, value = 0, step = 0.2),
-        sliderInput("B", "sd", min = 0.2, max = 10, value = 5, step = 0.2)
+        sliderInput("A", "mean", min = -3, max = 3, value = 0, step = 0.2),
+        sliderInput("B", "sd", min = 0.2, max = 2, value = 1, step = 0.2)
       ),
       beta =  list(
         sliderInput("A", "shape1", min = 0.8, max = 5, value = 1, step = 0.05),
@@ -208,38 +205,26 @@ shinyServer(function(input, output) {
     )
   })
 
-
-  observeEvent(input$population, {needReset <<- TRUE})
-  observeEvent(input$A, {needReset <<- TRUE })
-  observeEvent(input$B, {needReset <<- TRUE })
-  observeEvent(input$n, {needReset <<- TRUE})
-  observeEvent(input$level, {needReset <<- TRUE })
-
-  # text messages
-  CoverTally <- reactive({
-    if (needReset) {
-      coverTally <<- c(0,0)
-      needReset <<- FALSE
-      cat("reset!")
-    }
-    res <- coverTally + c( sum(Intervals()$cover),  nrow(Intervals()) )
-    print(nrow(Intervals()))
-    print(res)
-    coverTally <<- res
-    print(coverTally)
-    res
+  observeEvent(input$more, {
+    RV$cover <- RV$cover + sum(Intervals()$cover)
+    RV$total <- RV$total + nrow(Intervals())
   })
 
+
+  observeEvent( c(input$population, input$A, input$B, input$n, input$level),
+                { RV$cover <- 0; RV$total <- 0 }
+  )
+
+  # text messages
   output$message <- renderText({
     paste(sum(Intervals()$cover), "of these",
           nrow(Intervals()), "intervals cover the parameter value.")
   })
 
   output$runningTotal <- renderText({
-    # if (CoverTally()[2] > 0) {
-    if (TRUE){
+    if (RV$total){
       paste0("Coverage rate: ",
-             round(100 * CoverTally()[1]/CoverTally()[2],1), "% (", CoverTally()[2], " samples)")
+             round(100 * RV$cover/RV$total,1), "% (", RV$total, " samples)")
     } else {
       ""
     }
