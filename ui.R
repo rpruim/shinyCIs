@@ -33,7 +33,7 @@ shinyUI(fluidPage(
       sliderInput("level", "Confidence Level",
                   min=.50, max = 0.99, value = 0.95, step = 0.01),
       textOutput("message"),
-      actionButton("more", "New Samples"),
+      actionButton("more", "Generate 100 New Samples"),
       textOutput("runningTotal")
       ),  # end sidebarPanel
 
