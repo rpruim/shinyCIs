@@ -35,7 +35,7 @@ shinyServer(function(input, output) {
   my_xlim <- reactive({
     res <- switch(
       input$population,
-      norm = c(-7, 7), # input$A + c(-1, 1) * 3.2 * input$B,
+      norm = c(-6, 6), # input$A + c(-1, 1) * 3.2 * input$B,
       beta = c(0,1),
       gamma = c(0, input$A / input$B + 3 * sqrt(input$A) / input$B)
     )
@@ -46,8 +46,8 @@ shinyServer(function(input, output) {
     switch(
       input$population,
       norm =  list(
-        sliderInput("A", "mean", min = -3, max = 3, value = 0, step = 0.2),
-        sliderInput("B", "sd", min = 0.2, max = 2, value = 1, step = 0.2)
+        sliderInput("A", "mean", min = -2, max = 2, value = 0, step = 0.1),
+        sliderInput("B", "sd", min = 0.2, max = 3, value = 1, step = 0.1)
       ),
       beta =  list(
         sliderInput("A", "shape1", min = 0.8, max = 5, value = 1, step = 0.05),
@@ -72,13 +72,23 @@ shinyServer(function(input, output) {
 
   Data <- reactive({
     input$more
-    data.frame(
-      x =
-        do.call(
-          paste0("r", input$population),
-          c(list(n = as.integer(input$n) * nsamples), list(input$A, input$B )))
-    ) %>%
-      mutate( idx = rep(1:nsamples, each = input$n) )
+    tryCatch(
+      data.frame(
+        x =
+          do.call(
+            paste0("r", input$population),
+            c(list(n = as.integer(input$n) * nsamples), list(input$A, input$B )))
+      ) %>%
+        mutate( idx = rep(1:nsamples, each = input$n) ),
+    error = function(e)
+      data.frame(
+        x =
+          do.call(
+            paste0("r", "norm"),
+            c(list(n = 20 * nsamples), list(0, 1)))
+      ) %>%
+      mutate( idx = rep(1:nsamples, each = 20) )
+  )
   })
 
 
@@ -133,7 +143,7 @@ shinyServer(function(input, output) {
 
   output$samplePlot<- renderPlot({
     ggplot( data = OneSample()) +
-      geom_histogram( aes(x = x), bins = 20, fill = "navy", alpha=0.5) +
+      geom_histogram( aes(x = x), bins = 40, fill = "navy", alpha=0.5) +
       expand_limits(x = my_xlim()) +
       theme_bare()
   })
@@ -212,7 +222,7 @@ shinyServer(function(input, output) {
 
 
   observeEvent( c(input$population, input$A, input$B, input$n, input$level),
-                { RV$cover <- 0; RV$total <- 0 }
+                { RV$cover <- sum(Intervals()$cover); RV$total <- nrow(Intervals()) }
   )
 
   # text messages
@@ -222,9 +232,10 @@ shinyServer(function(input, output) {
   })
 
   output$runningTotal <- renderText({
-    if (RV$total){
+    if (TRUE){
       paste0("Coverage rate: ",
-             round(100 * RV$cover/RV$total,1), "% (", RV$total, " samples)")
+             round(100 *  RV$cover/ RV$total, 1),
+             "% (",  RV$total, " samples)")
     } else {
       ""
     }
