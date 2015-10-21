@@ -33,7 +33,7 @@ shinyServer(function(input, output) {
   nsamples <- 100
   selected_sample <- nsamples
   coverTally <- c(0, 0)
-  needReset <<- TRUE
+  needReset <<- FALSE
 
   my_xlim <- reactive({
     res <- switch(
@@ -218,12 +218,16 @@ shinyServer(function(input, output) {
   # text messages
   CoverTally <- reactive({
     if (needReset) {
-      coverTally <- c(0,0)
+      coverTally <<- c(0,0)
       needReset <<- FALSE
+      cat("reset!")
     }
-    coverTally <<- coverTally + c( sum(Intervals()$cover),  nrow(Intervals()) )
+    res <- coverTally + c( sum(Intervals()$cover),  nrow(Intervals()) )
+    print(nrow(Intervals()))
+    print(res)
+    coverTally <<- res
     print(coverTally)
-    coverTally
+    res
   })
 
   output$message <- renderText({
