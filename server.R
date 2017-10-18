@@ -83,6 +83,7 @@ shinyServer(function(input, output) {
   })
 
   target <- reactive({
+    if (is.null(input$A) || is.null(input$B)) { return (0) }
     switch(
       input$population,
       norm = input$A,
@@ -150,20 +151,20 @@ shinyServer(function(input, output) {
       group_by( idx ) %>%
       summarise(
         mean = mean(x),
-        lwr = mean + qt(alpha(), df = N() - 1) * sd(x) / sqrt(N()),
-        upr = mean + qt(1-alpha(), df = N() - 1) * sd(x) / sqrt(N()),
+        lwr = mean + qt(alpha(),     df = N() - 1) * sd(x) / sqrt(N()),
+        upr = mean + qt(1 - alpha(), df = N() - 1) * sd(x) / sqrt(N()),
         cover = (lwr < target()) & (target() < upr) ) %>%
       ungroup()
   })
 
   output$populationPlot<- renderPlot({
-    ggplot( data.frame( x=my_xlim()), aes(x=my_xlim()) ) +
+    ggplot( data.frame( x = my_xlim()), aes(x = my_xlim()) ) +
       stat_function( fun = popFunction(), n = 501 ) +
       expand_limits(x = my_xlim()) +
       theme_bare()
   })
 
-  output$samplePlot<- renderPlot({
+  output$samplePlot <- renderPlot({
     ggplot( data = OneSample()) +
       geom_histogram( aes(x = x), bins = 40, fill = "navy", alpha=0.5) +
       expand_limits(x = my_xlim()) +
@@ -172,7 +173,7 @@ shinyServer(function(input, output) {
 
   OneSampleColor <- reactive({
     colors <- c("TRUE" = "navy", "FALSE" = "red")
-    covers <- (Intervals() %>% filter(idx == selectedSample()) )$cover
+    covers <- ( Intervals() %>% filter(idx == selectedSample()) )$cover
     colors[ as.character(covers) ]
   })
 
