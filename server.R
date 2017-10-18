@@ -20,7 +20,7 @@ theme_bare <- function(...) {
     panel.border = element_blank(),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
-    panel.margin = unit(c(0,0,0,0), "lines"),
+    panel.spacing = unit(c(0,0,0,0), "lines"),
     plot.background = element_rect(fill = "white"),
     plot.margin = unit(c(0,0,0,0), "lines")
   )
